@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # MariaDB Database
+  database:
+    build: ./database
+    container_name: jenkins-mono-database
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: jenkins_mono
+      MYSQL_USER: jenkins_user
+      MYSQL_PASSWORD: jenkins_pass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - jenkins-mono-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Spring Boot Backend
+  backend:
+    build: ./backend
+    container_name: jenkins-mono-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/jenkins_mono
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_PROFILES_ACTIVE: prod
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - jenkins-mono-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Vue.js Frontend
+  frontend:
+    build: ./frontend
+    container_name: jenkins-mono-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - jenkins-mono-network
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/nginx.conf:ro
+
+  # Jenkins (선택적)
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins-mono-jenkins
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JENKINS_OPTS=--httpPort=8080
+    networks:
+      - jenkins-mono-network
+    profiles:
+      - jenkins
+
+volumes:
+  mariadb_data:
+    driver: local
+  jenkins_home:
+    driver: local
+
+networks:
+  jenkins-mono-network:
+    driver: bridge 

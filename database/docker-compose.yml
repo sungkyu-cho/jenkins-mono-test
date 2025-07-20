@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  database:
+    build: .
+    container_name: jenkins-mono-database
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: jenkins_mono
+      MYSQL_USER: jenkins_user
+      MYSQL_PASSWORD: jenkins_pass
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - jenkins-mono-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  jenkins-mono-network:
+    driver: bridge 
