@@ -5,7 +5,7 @@ services:
     container_name: jenkins-mono-database
     restart: unless-stopped
     ports:
-      - "3308:3308"
+      - "3308:3306"
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: jenkins_mono
