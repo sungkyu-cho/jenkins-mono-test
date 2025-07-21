@@ -21,7 +21,7 @@ pipeline {
                 dir('frontend') {
                     echo '프론트엔드 빌드 및 테스트 중...'
                     bat 'npm install'
-                    bat 'npm run lint || echo "ESLint 경고가 있지만 계속 진행합니다"'
+                    bat 'npm run lint'
                     bat 'npm run test'
                     bat 'npm run build'
                 }
