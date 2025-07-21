@@ -32,8 +32,8 @@ pipeline {
             steps {
                 dir('backend') {
                     echo '백엔드 빌드 및 테스트 중...'
-                    bat 'gradlew.bat clean build'
-                    bat 'gradlew.bat test'
+                    bat 'set GRADLE_USER_HOME=C:\\gradle-home && gradlew.bat clean build'
+                    bat 'set GRADLE_USER_HOME=C:\\gradle-home && gradlew.bat test'
                 }
             }
         }

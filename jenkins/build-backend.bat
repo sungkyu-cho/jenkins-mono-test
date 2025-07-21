@@ -29,6 +29,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo 4. 빌드 실행...
+set GRADLE_USER_HOME=C:\gradle-home
 call gradlew.bat clean build
 if %errorlevel% neq 0 (
     echo 빌드 실패!
