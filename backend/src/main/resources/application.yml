@@ -6,7 +6,7 @@ spring:
     name: jenkins-mono-backend
   
   datasource:
-    url: jdbc:mariadb://localhost:3306/jenkins_mono
+    url: jdbc:mariadb://localhost:3308/jenkins_mono
     username: root
     password: password
     driver-class-name: org.mariadb.jdbc.Driver
