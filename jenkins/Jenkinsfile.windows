@@ -6,6 +6,7 @@ pipeline {
         DOCKER_IMAGE_BACKEND = 'jenkins-mono-backend'
         DOCKER_IMAGE_DATABASE = 'jenkins-mono-database'
         DOCKER_TAG = "${env.BUILD_NUMBER}"
+        JAVA_HOME = 'C:\\Users\\sgc55\\.sdkman\\candidates\\java\\current'
     }
     
     stages {
@@ -13,6 +14,17 @@ pipeline {
             steps {
                 echo '코드 체크아웃 중...'
                 checkout scm
+            }
+        }
+        
+        stage('Setup Environment') {
+            steps {
+                echo '환경 설정 중...'
+                bat '''
+                    echo JAVA_HOME: %JAVA_HOME%
+                    java -version
+                    gradlew.bat --version
+                '''
             }
         }
         

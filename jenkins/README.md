@@ -2,12 +2,35 @@
 
 이 디렉토리는 Jenkins CI/CD 파이프라인 설정을 포함합니다.
 
+## Windows 환경 설정
+
+### 1. 필수 요구사항
+- **Java 22** (SDKMAN을 통해 설치)
+- **Node.js** (npm 명령어 사용)
+- **Docker Desktop** (Windows용)
+- **Git** (Windows용)
+
+### 2. 환경 변수 설정
+Windows 시스템 환경 변수에서 다음을 설정:
+
+```
+JAVA_HOME = C:\Users\sgc55\.sdkman\candidates\java\current
+PATH += %JAVA_HOME%\bin
+```
+
+### 3. 배치 스크립트
+다음 배치 스크립트들이 포함되어 있습니다:
+- `build-frontend.bat` - 프론트엔드 빌드
+- `build-backend.bat` - 백엔드 빌드
+- `build-docker.bat` - Docker 이미지 빌드
+- `test-integration.bat` - 통합 테스트
+
 ## Jenkins 파이프라인 구성
 
 ### 1. Jenkins 설치 및 설정
 
 1. **Jenkins 설치**
-   ```bash
+   ```cmd
    # Docker를 사용한 Jenkins 설치
    docker run -d \
      --name jenkins \
@@ -35,7 +58,13 @@
    - Definition: "Pipeline script from SCM"
    - SCM: Git
    - Repository URL: 프로젝트 Git 저장소 URL
-   - Script Path: jenkins/Jenkinsfile
+   - Script Path: jenkins/Jenkinsfile (Windows용: jenkins/Jenkinsfile.windows)
+
+3. **Windows 환경 설정**
+   - Jenkins 노드가 Windows인 경우 Jenkinsfile.windows 사용
+   - 환경 변수 설정:
+     - JAVA_HOME: C:\Users\sgc55\.sdkman\candidates\java\current
+     - PATH: %JAVA_HOME%\bin 추가
 
 ### 3. 파이프라인 단계
 
@@ -47,11 +76,13 @@
 - ESLint 검사
 - 단위 테스트 실행
 - 프로덕션 빌드
+- Windows: `bat` 명령어 사용
 
 #### Stage 3: Backend Build & Test
 - Spring Boot 애플리케이션 빌드
 - 단위 테스트 실행
 - JAR 파일 생성
+- Windows: `gradlew.bat` 사용
 
 #### Stage 4: Database Build
 - MariaDB Docker 이미지 빌드
@@ -62,7 +93,7 @@
 
 #### Stage 6: Backend Docker Build
 - 백엔드 Docker 이미지 빌드
-- OpenJDK 17 기반 이미지
+- OpenJDK 22 기반 이미지
 
 #### Stage 7: Integration Test
 - 전체 서비스 통합 테스트
@@ -151,13 +182,13 @@ GitHub/GitLab 웹훅을 설정하여 코드 푸시 시 자동 빌드:
 ### 8. 백업 및 복구
 
 #### Jenkins 데이터 백업
-```bash
+```cmd
 # Jenkins 홈 디렉토리 백업
 tar -czf jenkins_backup.tar.gz /var/jenkins_home
 ```
 
 #### Docker 이미지 백업
-```bash
+```cmd
 # 이미지 저장
 docker save jenkins-mono-frontend:latest > frontend.tar
 docker save jenkins-mono-backend:latest > backend.tar
@@ -180,6 +211,11 @@ docker save jenkins-mono-database:latest > database.tar
    - Docker 메모리 제한 설정
    - Jenkins JVM 힙 크기 조정
 
+4. **Windows 특화 문제**
+   - 경로 문제: 백슬래시(`\`) 사용
+   - 권한 문제: 관리자 권한으로 실행
+   - 환경 변수: 시스템 환경 변수 설정
+
 ### 10. 성능 최적화
 
 #### 빌드 성능 향상
@@ -190,4 +226,37 @@ docker save jenkins-mono-database:latest > database.tar
 #### 리소스 최적화
 - 불필요한 Docker 이미지 정리
 - Jenkins 워크스페이스 정리
-- 로그 로테이션 설정 
+- 로그 로테이션 설정
+
+## 로컬 테스트
+
+### 1. 개별 스크립트 테스트
+```cmd
+# 프론트엔드 빌드 테스트
+jenkins\build-frontend.bat
+
+# 백엔드 빌드 테스트
+jenkins\build-backend.bat
+
+# Docker 빌드 테스트
+jenkins\build-docker.bat
+
+# 통합 테스트
+jenkins\test-integration.bat
+```
+
+### 2. 전체 파이프라인 테스트
+```cmd
+# Jenkins 파이프라인 시뮬레이션
+echo "=== Frontend Build ==="
+jenkins\build-frontend.bat
+
+echo "=== Backend Build ==="
+jenkins\build-backend.bat
+
+echo "=== Docker Build ==="
+jenkins\build-docker.bat
+
+echo "=== Integration Test ==="
+jenkins\test-integration.bat
+``` 
