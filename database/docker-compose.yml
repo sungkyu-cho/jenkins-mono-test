@@ -4,12 +4,13 @@ services:
     container_name: jenkins-mono-database
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "3308:3308"
     environment:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: jenkins_mono
       MYSQL_USER: jenkins_user
       MYSQL_PASSWORD: jenkins_pass
+      MARIADB_PORT: 3308
     volumes:
       - mariadb_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

@@ -10,7 +10,7 @@ ENV MYSQL_PASSWORD=jenkins_pass
 COPY init.sql /docker-entrypoint-initdb.d/
 
 # 포트 노출
-EXPOSE 3306
+EXPOSE 3308
 
 # 헬스체크 추가
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
