@@ -90,11 +90,21 @@ pipeline {
             steps {
                 echo '통합 테스트 실행 중...'
                 bat '''
-                    docker-compose up -d database
-                    timeout /t 30 /nobreak
-                    docker-compose up -d backend
-                    timeout /t 30 /nobreak
-                    curl -f http://localhost:8080/api/health || exit /b 1
+                    docker-compose up -d
+                    set count=0
+                    :wait_loop
+                    curl -f http://localhost:8080/api/health && goto success
+                    set /a count+=1
+                    if %count% GEQ 24 (
+                        echo Backend health check failed
+                        docker-compose logs backend
+                        docker-compose down
+                        exit /b 1
+                    )
+                    timeout /t 5 >nul
+                    goto wait_loop
+                    :success
+                    echo Backend is healthy
                     docker-compose down
                 '''
             }
