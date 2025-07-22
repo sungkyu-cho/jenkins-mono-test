@@ -88,6 +88,9 @@ pipeline {
         
         stage('Integration Test') {
             steps {
+                echo '통합 테스트 실행 전 기존 컨테이너 정리...'
+                bat 'docker-compose down -v --remove-orphans'
+
                 echo '통합 테스트 실행 중...'
                 bat '''
                     docker-compose up -d
@@ -109,6 +112,7 @@ pipeline {
                 '''
             }
         }
+
         
         stage('Deploy to Staging') {
             when {
