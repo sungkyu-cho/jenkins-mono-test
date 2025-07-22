@@ -94,7 +94,11 @@ pipeline {
 
                 echo '통합 테스트 실행 중...'
                 bat '''
+                    docker rm -f jenkins-mono-database || echo DB 없음
+                    docker rm -f jenkins-mono-backend || echo BE 없음
+                    docker rm -f jenkins-mono-frontend || echo FE 없음
                     docker-compose down -v --remove-orphans
+
                     docker-compose up -d database
                     timeout /t 30 /nobreak
                     docker-compose up -d backend
