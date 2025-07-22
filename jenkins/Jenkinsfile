@@ -142,7 +142,7 @@ pipeline {
         
         stage('Deploy to Production') {
             when {
-                branch 'main'
+                branch 'master'
             }
             steps {
                 echo '프로덕션 환경에 배포 중...'
