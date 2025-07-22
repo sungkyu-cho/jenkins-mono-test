@@ -55,7 +55,7 @@ pipeline {
                         echo FROM node:18-alpine as build > Dockerfile
                         echo WORKDIR /app >> Dockerfile
                         echo COPY package*.json ./ >> Dockerfile
-                        echo RUN npm ci --only=production >> Dockerfile
+                        echo RUN npm ci --legacy-peer-deps >> Dockerfile
                         echo COPY . . >> Dockerfile
                         echo RUN npm run build >> Dockerfile
                         echo. >> Dockerfile
