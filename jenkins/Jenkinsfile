@@ -88,26 +88,18 @@ pipeline {
         
         stage('Integration Test') {
             steps {
-                echo '통합 테스트 실행 전 기존 컨테이너 정리...'
-                bat 'docker-compose down -v --remove-orphans'
+                echo '기존 컨테이너 제거 중...'
+                bat 'docker rm -f jenkins-mono-database || echo 이미 제거됨'
+                bat 'docker rm -f jenkins-mono-backend || echo 이미 제거됨'
 
                 echo '통합 테스트 실행 중...'
                 bat '''
-                    docker-compose up -d
-                    set count=0
-                    :wait_loop
-                    curl -f http://localhost:8080/api/health && goto success
-                    set /a count+=1
-                    if %count% GEQ 24 (
-                        echo Backend health check failed
-                        docker-compose logs backend
-                        docker-compose down
-                        exit /b 1
-                    )
-                    timeout /t 5 >nul
-                    goto wait_loop
-                    :success
-                    echo Backend is healthy
+                    docker-compose down -v --remove-orphans
+                    docker-compose up -d database
+                    timeout /t 30 /nobreak
+                    docker-compose up -d backend
+                    timeout /t 30 /nobreak
+                    curl -f http://localhost:8080/api/health || exit /b 1
                     docker-compose down
                 '''
             }
