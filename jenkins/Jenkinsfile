@@ -88,26 +88,46 @@ pipeline {
         
         stage('Integration Test') {
             steps {
-                echo '기존 컨테이너 제거 중...'
-                bat 'docker rm -f jenkins-mono-database || echo 이미 제거됨'
-                bat 'docker rm -f jenkins-mono-backend || echo 이미 제거됨'
-
                 echo '통합 테스트 실행 중...'
                 bat '''
+                    REM ▶ 기존 컨테이너 정리 (있으면 제거)
                     docker rm -f jenkins-mono-database || echo DB 없음
                     docker rm -f jenkins-mono-backend || echo BE 없음
                     docker rm -f jenkins-mono-frontend || echo FE 없음
+
+                    REM ▶ docker-compose down으로 볼륨/네트워크도 정리
                     docker-compose down -v --remove-orphans
 
+                    REM ▶ database 먼저 띄우기
                     docker-compose up -d database
+
+                    REM ▶ DB health 대기 (30초)
                     timeout /t 30 /nobreak
+
+                    REM ▶ backend 컨테이너 기동
                     docker-compose up -d backend
-                    timeout /t 30 /nobreak
-                    curl -f http://localhost:8080/api/health || exit /b 1
-                    docker-compose down
+
+                    REM ▶ 백엔드 health check (최대 60초 재시도)
+                    set RETRY=12
+                    :health_check
+                    curl -f http://localhost:8080/api/health && goto :ok
+                    timeout /t 5 /nobreak
+                    set /a RETRY=%RETRY%-1
+                    if %RETRY%==0 (
+                        echo 백엔드 Health Check 실패
+                        docker logs jenkins-mono-backend
+                        exit /b 1
+                    )
+                    goto health_check
+                    :ok
+                    echo 백엔드 정상 응답 확인됨.
+
+                    REM ▶ 테스트 성공 후 전체 종료
+                    docker-compose down -v --remove-orphans
                 '''
             }
         }
+
 
         
         stage('Deploy to Staging') {
