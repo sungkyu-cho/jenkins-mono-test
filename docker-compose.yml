@@ -30,7 +30,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mariadb://database:3308/jenkins_mono
+      SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/jenkins_mono
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: password
       SPRING_PROFILES_ACTIVE: prod
